@@ -1,0 +1,149 @@
+# for loading and saving paths
+[path]
+data_type = "WSJ0-SI84_100h"
+is_checkpoint = true
+is_resume_reload = false
+checkpoint_load_path = "CheckpointPath"
+checkpoint_load_filename = ""
+loss_save_path = "Loss"
+model_best_path = "BestModel"
+logging_path = "Logger"
+
+[path.train]
+mix_file_path = "*/train/mix"
+#mix_file_path = "F:/some_datasets/toy_wsj_si84/train/mix"
+target_file_path = "*/train/clean"
+#target_file_path = "F:/some_datasets/toy_wsj_si84/train/clean"
+
+[path.val]
+mix_file_path = "*/dev/mix"
+#mix_file_path = "F:/some_datasets/toy_wsj_si84/dev/mix"
+target_file_path = "*/dev/clean"
+#target_file_path = "F:/some_datasets/toy_wsj_si84/dev/clean"
+
+[gpu]
+gpu_ids = [1]
+# signal settings before sending into the network
+[signal]
+sr = 16000
+is_chunk = true
+chunk_length = 7.0
+win_size = 0.020
+win_shift = 0.010
+fft_num = 320
+is_variance_norm = true
+is_mu_compress = true
+
+
+# choosed loss function
+[loss_function]
+path = "utils.loss"
+l_type = "L2"
+[loss_function.mag]
+classname = "MagEuclideanLoss"
+gamma1 = 0.5
+[loss_function.sisnr]
+classname = "SISNRLoss"
+gamma2 = 0.2
+[loss_function.com_mag]
+classname = "ComMagEuclideanLoss"
+alpha3 = 0.5
+gamma3 = 1.0
+
+
+
+# choosed optimizer
+[optimizer]
+name = "adam"
+lr = 5e-4
+beta1 = 0.9
+beta2 = 0.999
+l2 = 1e-7
+gradient_norm = 5.0
+epochs = 60
+halve_lr = true
+early_stop = true
+halve_freq = 2
+early_stop_freq = 3
+print_freq = 200
+metric_options = ["SISNR"]  # only one metric is supported in the current version, chioces: [NB-PESQ, ESTOI]
+
+# reproducibility settings
+[reproducibility]
+seed = 1234
+
+# Dataset
+[dataset]
+[dataset.train]
+json_path = "*/data/tr/"
+#json_path = "F:/some_datasets/toy_wsj_si84/Json/train"
+batch_size = 8
+is_shuffle = true
+
+[dataset.val]
+json_path = "*/data/dev/"
+#json_path = "F:/some_datasets/toy_wsj_si84/Json/dev"
+
+batch_size = 8
+is_shuffle = true
+[dataloader]
+[dataloader.train]
+num_workers = 8
+pin_memory = true
+drop_last = false
+shuffle = false
+
+[dataloader.val]
+num_workers = 8
+pin_memory = true
+drop_last = false
+shuffle = false
+
+# network configs
+[net]
+choice="CompNet"
+path = "nets.compnet"
+classname = "CompNet"
+
+[net.CompNet.args]
+win_size = 320
+win_shift = 160
+fft_num = 320
+k1 = [2, 3]
+k2 = [2, 3]
+c = 64
+embed_dim = 64
+kd1 = 5
+cd1 = 64
+d_feat = 256
+hidden_dim = 64
+hidden_num = 2
+group_num = 2
+dilations = [1,2,5,9]
+inter_connect = "cat"
+intra_connect = "cat"
+norm_type = "iLN"
+rnn_type = "LSTM"
+post_type = "collaborative"
+is_dual_rnn = true
+is_causal = true
+is_u2 = true
+is_mu_compress = true
+
+
+[save]
+save_opt = "ablation_study"   # ["ablation_study", "formal_benchmark"]
+
+[save.ablation_study.paths]
+loss_filename = "WSJ0-SI84_100h_compnet_causal_loss.mat"
+best_model_filename = "WSJ0-SI84_100h_compnet_causal_model.pth"
+checkpoint_filename = "WSJ0-SI84_100h_compnet_causal_model.pth.tar"
+logger_filename = "2022-08-23-WSJ0-SI84_100h_compnet_causal.txt"
+
+[save.formal_benchmark.paths]
+loss_filename = "WSJ0-SI84_300h_taylorenhancer_cLN_causal_loss.mat"
+best_model_filename = "WSJ0-SI84_300h_taylorenhancer_cLN_causal_model.pth"
+checkpoint_filename = "WSJ0-SI84_300h_taylorenhancer_cLN_causal_model.pth.tar"
+logger_filename = "2022-7-04-WSJ0-SI84_300h_taylorenhancer_cLN_causal.txt"
+
+#tensorboard_filename = "librispeech_taylorbeamformer_mic_linear_mid_target_timvdr_order0_param_nonshared_bf_embedding64_hidnode_64_u2_risqueezed_norm2d_BN_norm1d_BN_causal"
